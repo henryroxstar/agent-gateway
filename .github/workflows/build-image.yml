@@ -1,0 +1,24 @@
+name: build-image
+on:
+  push:
+    branches: [lab-build]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image (release Dockerfile, native arm64)
+        run: docker build -t agent-gateway:local .
+      - name: Image summary
+        run: docker images agent-gateway:local
+      - name: Save image
+        run: docker save agent-gateway:local | gzip -1 > agent-gateway-local-arm64.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-gateway-local-arm64
+          path: agent-gateway-local-arm64.tar.gz
+          retention-days: 7
+          compression-level: 0
